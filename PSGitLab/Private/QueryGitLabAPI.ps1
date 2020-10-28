@@ -24,14 +24,23 @@ Function QueryGitLabAPI {
 
     if ($GitLabConfig.APIVersion) { $Version = "v$($GitLabConfig.APIVersion)" }
 
+	$BearerToken=$GitLabConfig.BearerToken
     $Domain = $GitLabConfig.Domain
     if ( $IsWindows -or ( [version]$PSVersionTable.PSVersion -lt [version]"5.99.0" ) ) {
         $Token = DecryptString -Token $GitLabConfig.Token
     } elseif ( $IsLinux -or $IsMacOS ) {
         $Token = $GitLabConfig.Token
     }
-    $Headers = @{
-        'PRIVATE-TOKEN'=$Token;
+    if ($BearerToken) {
+        $Headers = @{
+            'Authorization'= "Bearer " + $Token;
+        }
+
+    }
+    else {
+        $Headers = @{
+            'PRIVATE-TOKEN'=$Token;
+        }
     }
 
     $Request.Add('Headers',$Headers)
@@ -81,6 +90,7 @@ Function QueryGitLabAPI {
         Remove-Variable -Name Token
         Remove-Variable -Name Headers
         Remove-Variable -Name Request
+		Remove-Variable -Name BearerToken
     }
 
     foreach ($Result in $Results) {

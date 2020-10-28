@@ -42,6 +42,7 @@
   )
   $GitLabConfig = ImportConfig
   $Domain = $GitLabConfig.Domain
+  $BearerToken=$GitLabConfig.BearerToken
   if ( $IsWindows -or ( [version]$PSVersionTable.PSVersion -lt [version]'5.99.0' ) )
   {
     $Token = DecryptString -Token $GitLabConfig.Token
@@ -56,11 +57,17 @@
   {
     Write-Verbose -Message ('URL: {0}' -f $RequestURI)
     $wc = New-Object -TypeName System.Net.WebClient
-    $wc.Headers.Add('PRIVATE-TOKEN',$Token)
+	if ($BearerToken) {
+      $wc.Headers.Add('Bearer',$Token)
+    }
+    else {
+      $wc.Headers.Add('PRIVATE-TOKEN',$Token)
+    }
     Write-Verbose -Message ('Downloading File from {0} to {1}' -f $RequestURI, $OutFile)
     $wc.DownloadFile($RequestURI,$OutFile)
     Remove-Variable -Name Token
     Remove-Variable -Name RequestURI
+	Remove-Variable -Name BearerToken
   }
   catch
   {
